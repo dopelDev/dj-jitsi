@@ -1,6 +1,3 @@
-# Directorio de planes (según solicitud)
-plans/
-
 # Archivos Python compilados
 *.py[cod]
 *$py.class
@@ -33,11 +30,16 @@ env.bak/
 venv.bak/
 
 # Base de datos SQLite
-db/
+django/db/
+django/*.sqlite3
+django/*.db
 *.sqlite3
 *.db
 
 # Archivos estáticos de Django
+django/static/
+django/staticfiles/
+django/media/
 static/
 staticfiles/
 media/
@@ -70,6 +72,7 @@ Thumbs.db
 # Archivos de logs
 *.log
 logs/
+jitsi/logs/
 
 # Archivos de cache
 .cache/

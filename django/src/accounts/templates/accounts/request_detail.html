@@ -1,0 +1,237 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Detalle de Solicitud - Django-Jitsi{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero is-info is-medium">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <h1 class="title is-1 has-text-centered">
+                        <i class="fas fa-file-alt mr-3"></i>
+                        Detalle de Solicitud
+                    </h1>
+                    <h2 class="subtitle is-4 has-text-centered">
+                        {{ request_obj.full_name }} - {{ request_obj.email }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-8">
+                <!-- Request Information Card -->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Información de la Solicitud
+                        </p>
+                        <div class="card-header-icon">
+                            {% if request_obj.status == "pending" %}
+                                <span class="tag is-warning is-large">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Pendiente
+                                </span>
+                            {% elif request_obj.status == "approved" %}
+                                <span class="tag is-success is-large">
+                                    <i class="fas fa-check mr-1"></i>
+                                    Aprobada
+                                </span>
+                            {% elif request_obj.status == "rejected" %}
+                                <span class="tag is-danger is-large">
+                                    <i class="fas fa-times mr-1"></i>
+                                    Rechazada
+                                </span>
+                            {% endif %}
+                        </div>
+                    </header>
+                    <div class="card-content">
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Email</label>
+                                    <div class="control">
+                                        <input class="input" type="email" value="{{ request_obj.email }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Nombre Completo</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ request_obj.full_name }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="field">
+                            <label class="label">Notas del Usuario</label>
+                            <div class="control">
+                                <textarea class="textarea" readonly>{{ request_obj.note }}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Fecha de Solicitud</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ request_obj.created_at|date:'d/m/Y H:i' }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                {% if request_obj.decided_at %}
+                                <div class="field">
+                                    <label class="label">Fecha de Decisión</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ request_obj.decided_at|date:'d/m/Y H:i' }}" readonly>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if request_obj.decided_by %}
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Decidido por</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ request_obj.decided_by.username }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Rol del Decisor</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ request_obj.decided_by.profile.role }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if request_obj.decision_note %}
+                        <div class="field">
+                            <label class="label">Nota del Administrador</label>
+                            <div class="control">
+                                <textarea class="textarea" readonly>{{ request_obj.decision_note }}</textarea>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                {% if request_obj.status == "pending" %}
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-tools mr-2"></i>
+                            Acciones Disponibles
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="columns">
+                            <div class="column is-6">
+                                <form method="post" action="{% url 'approve_request' request_obj.pk %}" onsubmit="return confirmAction('aprobar')">
+                                    {% csrf_token %}
+                                    <div class="field">
+                                        <label class="label">Nota para la Aprobación (opcional)</label>
+                                        <div class="control">
+                                            <textarea class="textarea" name="decision_note" placeholder="Agregar una nota sobre la decisión..."></textarea>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="button is-success is-fullwidth">
+                                        <i class="fas fa-check mr-2"></i>
+                                        Aprobar Solicitud
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="column is-6">
+                                <form method="post" action="{% url 'reject_request' request_obj.pk %}" onsubmit="return confirmAction('rechazar')">
+                                    {% csrf_token %}
+                                    <div class="field">
+                                        <label class="label">Nota para el Rechazo (opcional)</label>
+                                        <div class="control">
+                                            <textarea class="textarea" name="decision_note" placeholder="Agregar una nota sobre la decisión..."></textarea>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="button is-danger is-fullwidth">
+                                        <i class="fas fa-times mr-2"></i>
+                                        Rechazar Solicitud
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% elif request_obj.status in "approved,rejected" %}
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-undo mr-2"></i>
+                            Acciones Disponibles
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="notification is-warning is-light">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <strong>Atención:</strong> Esta solicitud ya ha sido decidida. Puedes resetearla a pendiente si necesitas revisarla nuevamente.
+                        </div>
+                        
+                        <div class="has-text-centered">
+                            <form method="post" action="{% url 'reset_request' request_obj.pk %}" onsubmit="return confirmAction('resetear')" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="button is-warning">
+                                    <i class="fas fa-undo mr-2"></i>
+                                    Resetear a Pendiente
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Navigation -->
+                <div class="has-text-centered mt-5">
+                    <a href="{% url 'admin_requests' %}" class="button is-light mr-3">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver a la Lista
+                    </a>
+                    
+                    <a href="/admin/accounts/signuprequest/{{ request_obj.pk }}/change/" class="button is-info">
+                        <i class="fas fa-cog mr-2"></i>
+                        Editar en Admin Django
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmAction(action) {
+        const messages = {
+            'aprobar': '¿Estás seguro de que quieres aprobar esta solicitud?',
+            'rechazar': '¿Estás seguro de que quieres rechazar esta solicitud?',
+            'resetear': '¿Estás seguro de que quieres resetear esta solicitud a pendiente?'
+        };
+        
+        return confirm(messages[action]);
+    }
+</script>
+{% endblock %}

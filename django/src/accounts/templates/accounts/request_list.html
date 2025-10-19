@@ -1,0 +1,279 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Solicitudes de Registro - Django-Jitsi{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero is-warning is-medium">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <h1 class="title is-1 has-text-centered">
+                        <i class="fas fa-clipboard-list mr-3"></i>
+                        Solicitudes de Registro
+                    </h1>
+                    <h2 class="subtitle is-4 has-text-centered">
+                        Gestionar solicitudes de nuevos usuarios
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-10">
+                <!-- Statistics Cards -->
+                <div class="columns mb-5">
+                    <div class="column is-3">
+                        <div class="card has-text-centered">
+                            <div class="card-content">
+                                <div class="icon is-large has-text-primary mb-4">
+                                    <i class="fas fa-list fa-2x"></i>
+                                </div>
+                                <h3 class="title is-4">{{ stats.total }}</h3>
+                                <p class="subtitle is-6">Total Solicitudes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-3">
+                        <div class="card has-text-centered">
+                            <div class="card-content">
+                                <div class="icon is-large has-text-warning mb-4">
+                                    <i class="fas fa-clock fa-2x"></i>
+                                </div>
+                                <h3 class="title is-4">{{ stats.pending }}</h3>
+                                <p class="subtitle is-6">Pendientes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-3">
+                        <div class="card has-text-centered">
+                            <div class="card-content">
+                                <div class="icon is-large has-text-success mb-4">
+                                    <i class="fas fa-check fa-2x"></i>
+                                </div>
+                                <h3 class="title is-4">{{ stats.approved }}</h3>
+                                <p class="subtitle is-6">Aprobadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-3">
+                        <div class="card has-text-centered">
+                            <div class="card-content">
+                                <div class="icon is-large has-text-danger mb-4">
+                                    <i class="fas fa-times fa-2x"></i>
+                                </div>
+                                <h3 class="title is-4">{{ stats.rejected }}</h3>
+                                <p class="subtitle is-6">Rechazadas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="card mb-5">
+                    <div class="card-content">
+                        <h3 class="title is-5 mb-4">
+                            <i class="fas fa-filter mr-2"></i>
+                            Filtros
+                        </h3>
+                        <div class="buttons">
+                            <a href="{% url 'admin_requests' %}" 
+                               class="button {% if not current_filter %}is-primary{% else %}is-light{% endif %}">
+                                <i class="fas fa-list mr-1"></i>
+                                Todas
+                            </a>
+                            <a href="{% url 'admin_requests' %}?status=pending" 
+                               class="button {% if current_filter == 'pending' %}is-warning{% else %}is-light{% endif %}">
+                                <i class="fas fa-clock mr-1"></i>
+                                Pendientes ({{ stats.pending }})
+                            </a>
+                            <a href="{% url 'admin_requests' %}?status=approved" 
+                               class="button {% if current_filter == 'approved' %}is-success{% else %}is-light{% endif %}">
+                                <i class="fas fa-check mr-1"></i>
+                                Aprobadas ({{ stats.approved }})
+                            </a>
+                            <a href="{% url 'admin_requests' %}?status=rejected" 
+                               class="button {% if current_filter == 'rejected' %}is-danger{% else %}is-light{% endif %}">
+                                <i class="fas fa-times mr-1"></i>
+                                Rechazadas ({{ stats.rejected }})
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requests Table -->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-list mr-2"></i>
+                            Lista de Solicitudes
+                        </p>
+                        <div class="card-header-icon">
+                            <span class="tag is-info">{{ requests|length }} solicitudes</span>
+                        </div>
+                    </header>
+                    <div class="card-content">
+                        {% if requests %}
+                            <div class="table-container">
+                                <table class="table is-fullwidth is-hoverable">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                <i class="fas fa-envelope mr-1"></i>
+                                                Email
+                                            </th>
+                                            <th>
+                                                <i class="fas fa-user mr-1"></i>
+                                                Nombre
+                                            </th>
+                                            <th>
+                                                <i class="fas fa-flag mr-1"></i>
+                                                Estado
+                                            </th>
+                                            <th>
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                Fecha de Solicitud
+                                            </th>
+                                            <th>
+                                                <i class="fas fa-tools mr-1"></i>
+                                                Acciones
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for request in requests %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ request.email }}</strong>
+                                            </td>
+                                            <td>
+                                                {{ request.full_name }}
+                                            </td>
+                                            <td>
+                                                {% if request.status == "pending" %}
+                                                    <span class="tag is-warning">
+                                                        <i class="fas fa-clock mr-1"></i>
+                                                        Pendiente
+                                                    </span>
+                                                {% elif request.status == "approved" %}
+                                                    <span class="tag is-success">
+                                                        <i class="fas fa-check mr-1"></i>
+                                                        Aprobada
+                                                    </span>
+                                                {% elif request.status == "rejected" %}
+                                                    <span class="tag is-danger">
+                                                        <i class="fas fa-times mr-1"></i>
+                                                        Rechazada
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="tag is-light">
+                                                    {{ request.created_at|date:"d/m/Y H:i" }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="buttons are-small">
+                                                    <a href="{% url 'request_detail' request.pk %}" 
+                                                       class="button is-info is-small" 
+                                                       title="Ver detalles">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    
+                                                    {% if request.status == "pending" %}
+                                                        <form method="post" action="{% url 'approve_request' request.pk %}" 
+                                                              onsubmit="return confirmAction('aprobar')" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="button is-success is-small" 
+                                                                    title="Aprobar">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </form>
+                                                        
+                                                        <form method="post" action="{% url 'reject_request' request.pk %}" 
+                                                              onsubmit="return confirmAction('rechazar')" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="button is-danger is-small" 
+                                                                    title="Rechazar">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    
+                                                    <a href="/admin/accounts/signuprequest/{{ request.pk }}/change/" 
+                                                       class="button is-light is-small" 
+                                                       title="Editar en Admin Django">
+                                                        <i class="fas fa-cog"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="has-text-centered py-6">
+                                <div class="icon is-large has-text-grey-light mb-4">
+                                    <i class="fas fa-inbox fa-3x"></i>
+                                </div>
+                                <h3 class="title is-4 has-text-grey">No hay solicitudes</h3>
+                                <p class="subtitle is-6 has-text-grey">
+                                    {% if current_filter %}
+                                        No se encontraron solicitudes con el filtro seleccionado.
+                                    {% else %}
+                                        No se han encontrado solicitudes de registro.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mt-5">
+                    <div class="card-content">
+                        <div class="content has-text-centered">
+                            <h3 class="title is-5 mb-4">
+                                <i class="fas fa-bolt mr-2"></i>
+                                Acciones Rápidas
+                            </h3>
+                            
+                            <div class="buttons is-centered">
+                                <a href="/admin/" class="button is-primary">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    Panel de Administración Django
+                                </a>
+                                
+                                <a href="{% url 'dashboard' %}" class="button is-light">
+                                    <i class="fas fa-arrow-left mr-2"></i>
+                                    Volver al Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmAction(action) {
+        const messages = {
+            'aprobar': '¿Estás seguro de que quieres aprobar esta solicitud?',
+            'rechazar': '¿Estás seguro de que quieres rechazar esta solicitud?'
+        };
+        
+        return confirm(messages[action]);
+    }
+</script>
+{% endblock %}
