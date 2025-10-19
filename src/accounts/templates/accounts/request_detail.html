@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Solicitud - Django Jitsi</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .detail-card { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .field { margin-bottom: 15px; }
+        .field-label { font-weight: bold; color: #333; }
+        .field-value { color: #666; }
+        .status-pending { color: #f39c12; }
+        .status-approved { color: #27ae60; }
+        .status-rejected { color: #e74c3c; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Detalle de Solicitud</h1>
+    
+    <div class="detail-card">
+        <div class="field">
+            <div class="field-label">Nombre Completo:</div>
+            <div class="field-value">{{ obj.full_name }}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Email:</div>
+            <div class="field-value">{{ obj.email }}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Estado:</div>
+            <div class="field-value status-{{ obj.status }}">{{ obj.get_status_display }}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Nota:</div>
+            <div class="field-value">
+                {% if obj.note %}
+                    {{ obj.note }}
+                {% else %}
+                    Sin nota
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Fecha de Creación:</div>
+            <div class="field-value">{{ obj.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Fecha de Decisión:</div>
+            <div class="field-value">
+                {% if obj.decided_at %}
+                    {{ obj.decided_at|date:"d/m/Y H:i" }}
+                {% else %}
+                    Pendiente
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <p>
+        <a href="{% url 'request_list' %}">Volver a la Lista</a> | 
+        <a href="{% url 'dashboard' %}">Dashboard</a> | 
+        <a href="/admin/">Admin</a>
+    </p>
+</body>
+</html>
