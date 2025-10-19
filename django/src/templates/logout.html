@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Cerrar Sesión{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-6">
+                <div class="card">
+                    <div class="card-content has-text-centered">
+                        <h2 class="title is-3 has-text-success mb-4">
+                            <i class="fas fa-check-circle has-text-success mr-3"></i>
+                            Sesión Cerrada
+                        </h2>
+                        <p class="subtitle is-5 mb-6">
+                            Has cerrado sesión exitosamente. Gracias por usar nuestro servicio.
+                        </p>
+                        <div class="buttons is-centered">
+                            <a href="{% url 'home' %}" class="button is-primary is-large">
+                                <i class="fas fa-home mr-2"></i>
+                                Volver al Inicio
+                            </a>
+                            <a href="{% url 'dashboard' %}" class="button is-light is-large">
+                                <i class="fas fa-tachometer-alt mr-2"></i>
+                                Ir al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

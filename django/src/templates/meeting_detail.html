@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Meeting {{ meeting.room }} - Django-Jitsi{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero is-primary is-medium">
+    <div class="hero-body">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <h1 class="title is-1 has-text-centered">
+                        <i class="fas fa-video mr-3"></i>
+                        {{ meeting.room }}
+                    </h1>
+                    <h2 class="subtitle is-4 has-text-centered">
+                        Reunión creada por <strong>{{ meeting.owner.username }}</strong>
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="section">
+    <div class="container">
+        <div class="columns is-centered">
+            <div class="column is-8">
+                <!-- Meeting Info Card -->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Información de la Reunión
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Nombre de la Sala</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ meeting.room }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Propietario</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ meeting.owner.username }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="columns">
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Creado</label>
+                                    <div class="control">
+                                        <input class="input" type="text" value="{{ meeting.created_at|date:'d/m/Y H:i' }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="column is-6">
+                                <div class="field">
+                                    <label class="label">Estado</label>
+                                    <div class="control">
+                                        <span class="tag is-success is-large">Activo</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Join Meeting Card -->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Unirse a la Reunión
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="mb-4">
+                                Haz clic en el botón de abajo para unirte a la reunión en Jitsi Meet. 
+                                Se abrirá en una nueva ventana.
+                            </p>
+                            
+                            <div class="has-text-centered">
+                                <a href="{{ meeting.jitsi_url }}" target="_blank" class="button is-primary is-large">
+                                    <i class="fas fa-video mr-2"></i>
+                                    Unirse a la Reunión
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Meeting Card -->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <i class="fas fa-share-alt mr-2"></i>
+                            Compartir Reunión
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <p class="mb-4">
+                                Copia este enlace y compártelo con los participantes de la reunión:
+                            </p>
+                            
+                            <div class="field">
+                                <label class="label">Enlace de la Reunión</label>
+                                <div class="field has-addons">
+                                    <div class="control is-expanded">
+                                        <input class="input" type="text" id="meeting-url" value="{{ meeting.jitsi_url }}" readonly>
+                                    </div>
+                                    <div class="control">
+                                        <button class="button is-info" onclick="copyToClipboard()">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="notification is-success is-light" id="copy-notification" style="display: none;">
+                                <i class="fas fa-check mr-2"></i>
+                                ¡Enlace copiado al portapapeles!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="has-text-centered mt-5">
+                    <a href="{% url 'dashboard' %}" class="button is-light mr-3">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver al Dashboard
+                    </a>
+                    
+                    {% if meeting.owner == user %}
+                    <a href="{% url 'create_meeting' %}" class="button is-success">
+                        <i class="fas fa-plus mr-2"></i>
+                        Crear Nueva Reunión
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function copyToClipboard() {
+        const urlInput = document.getElementById('meeting-url');
+        const notification = document.getElementById('copy-notification');
+        
+        // Select and copy the text
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            document.execCommand('copy');
+            // Show notification
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        } catch (err) {
+            // Fallback for modern browsers
+            navigator.clipboard.writeText(urlInput.value).then(() => {
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            });
+        }
+    }
+</script>
+{% endblock %}

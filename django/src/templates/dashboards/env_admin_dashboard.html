@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard ENV Admin - Django-Jitsi{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <h1 class="title is-2">
+                        <i class="fas fa-crown has-text-warning mr-3"></i>
+                        Dashboard ENV Admin
+                    </h1>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <span class="tag is-warning is-large">ENV_ADMIN</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas del Sistema -->
+        <div class="columns">
+            <div class="column is-3">
+                <div class="card has-background-primary has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ total_users }}</p>
+                                        <p class="subtitle is-6 has-text-white">Total Usuarios</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-users fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card has-background-warning has-text-dark">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-dark">{{ pending_requests }}</p>
+                                        <p class="subtitle is-6 has-text-dark">Solicitudes Pendientes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-clock fa-2x has-text-dark"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card has-background-success has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ approved_requests }}</p>
+                                        <p class="subtitle is-6 has-text-white">Solicitudes Aprobadas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-check-circle fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card has-background-info has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ total_meetings }}</p>
+                                        <p class="subtitle is-6 has-text-white">Total Meetings</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-video fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Acciones Rápidas
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="columns">
+                    <div class="column is-3">
+                        <a href="{% url 'admin_requests' %}" class="button is-warning is-large is-fullwidth">
+                            <i class="fas fa-list mr-2"></i>
+                            Gestionar Solicitudes
+                        </a>
+                    </div>
+                    <div class="column is-3">
+                        <a href="{% url 'admin_users' %}" class="button is-info is-large is-fullwidth">
+                            <i class="fas fa-users mr-2"></i>
+                            Gestionar Usuarios
+                        </a>
+                    </div>
+                    <div class="column is-3">
+                        <a href="/admin/" class="button is-danger is-large is-fullwidth" target="_blank">
+                            <i class="fas fa-cog mr-2"></i>
+                            Panel Django Admin
+                        </a>
+                    </div>
+                    <div class="column is-3">
+                        <a href="{% url 'create_meeting' %}" class="button is-success is-large is-fullwidth">
+                            <i class="fas fa-plus mr-2"></i>
+                            Crear Meeting
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas Solicitudes -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-history mr-2"></i>
+                    Últimas Solicitudes
+                </p>
+            </header>
+            <div class="card-content">
+                {% if recent_requests %}
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-hoverable">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Email</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in recent_requests %}
+                                <tr>
+                                    <td>{{ request.full_name }}</td>
+                                    <td>{{ request.email }}</td>
+                                    <td>
+                                        {% if request.status == 'pending' %}
+                                            <span class="tag is-warning">Pendiente</span>
+                                        {% elif request.status == 'approved' %}
+                                            <span class="tag is-success">Aprobada</span>
+                                        {% else %}
+                                            <span class="tag is-danger">Rechazada</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.created_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'request_detail' request.pk %}" class="button is-small is-outlined">
+                                            <i class="fas fa-eye mr-1"></i> Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="has-text-centered py-6">
+                        <i class="fas fa-inbox fa-3x has-text-grey-light mb-4"></i>
+                        <p class="has-text-grey">No hay solicitudes recientes.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Botón de Logout -->
+        <div class="has-text-centered mt-5">
+            <a href="{% url 'logout' %}" class="button is-light is-large">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Cerrar Sesión
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

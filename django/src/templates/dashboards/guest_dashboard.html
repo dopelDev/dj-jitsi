@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Invitado - Django-Jitsi{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <h1 class="title is-2">
+                        <i class="fas fa-user-circle has-text-grey mr-3"></i>
+                        Dashboard Invitado
+                    </h1>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <span class="tag is-grey is-large">GUEST</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Acceso Limitado -->
+        <div class="card">
+            <div class="card-content">
+                <div class="notification is-warning">
+                    <h6 class="title is-6">Tu cuenta tiene acceso limitado</h6>
+                    <p>Como usuario invitado, tienes acceso básico a la plataforma. Para acceder a todas las funcionalidades, necesitas que un administrador apruebe tu solicitud de registro.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funcionalidades Disponibles -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-check-circle has-text-success mr-2"></i>
+                    Funcionalidades Disponibles
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="columns">
+                    <div class="column is-6">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="fas fa-check has-text-success fa-lg"></i>
+                            </div>
+                            <div class="media-content">
+                                <h6 class="title is-6">Ver Información Básica</h6>
+                                <p class="has-text-grey">Acceso a información general de la plataforma</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-6">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="fas fa-check has-text-success fa-lg"></i>
+                            </div>
+                            <div class="media-content">
+                                <h6 class="title is-6">Navegar por el Sitio</h6>
+                                <p class="has-text-grey">Explorar las páginas públicas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funcionalidades No Disponibles -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-times-circle has-text-danger mr-2"></i>
+                    Funcionalidades No Disponibles
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="columns">
+                    <div class="column is-6">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="fas fa-times has-text-danger fa-lg"></i>
+                            </div>
+                            <div class="media-content">
+                                <h6 class="title is-6">Crear Meetings</h6>
+                                <p class="has-text-grey">Necesitas ser usuario registrado</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column is-6">
+                        <div class="media">
+                            <div class="media-left">
+                                <i class="fas fa-times has-text-danger fa-lg"></i>
+                            </div>
+                            <div class="media-content">
+                                <h6 class="title is-6">Gestionar Solicitudes</h6>
+                                <p class="has-text-grey">Solo para administradores</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acciones Disponibles -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Acciones Disponibles
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="columns">
+                    <div class="column is-4">
+                        <a href="{% url 'home' %}" class="button is-info is-large is-fullwidth">
+                            <i class="fas fa-home mr-2"></i>
+                            Ir al Inicio
+                        </a>
+                    </div>
+                    <div class="column is-4">
+                        <a href="{% url 'logout' %}" class="button is-light is-large is-fullwidth">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Cerrar Sesión
+                        </a>
+                    </div>
+                    <div class="column is-4">
+                        <button class="button is-light is-large is-fullwidth" disabled>
+                            <i class="fas fa-lock mr-2"></i>
+                            Funciones Limitadas
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Usuario -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Información de Mi Cuenta
+                </p>
+            </header>
+            <div class="card-content">
+                <div class="columns">
+                    <div class="column is-6">
+                        <p><strong>Usuario:</strong> {{ user_info.username }}</p>
+                        <p><strong>Email:</strong> {{ user_info.email }}</p>
+                        <p><strong>Rol:</strong> <span class="tag is-grey">GUEST</span></p>
+                    </div>
+                    <div class="column is-6">
+                        <p><strong>Estado:</strong> <span class="has-text-warning">Acceso Limitado</span></p>
+                        <p><strong>Privilegios:</strong> <span class="has-text-grey">Básicos</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

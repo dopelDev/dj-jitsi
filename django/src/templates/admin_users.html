@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Usuarios - Django-Jitsi{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="level">
+            <div class="level-left">
+                <div class="level-item">
+                    <h1 class="title is-2">
+                        <i class="fas fa-users has-text-primary mr-3"></i>
+                        Gestión de Usuarios
+                    </h1>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <span class="tag is-primary is-large">ADMIN</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="columns mb-5">
+            <div class="column is-3">
+                <div class="card has-background-primary has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ total_users }}</p>
+                                        <p class="subtitle is-6 has-text-white">Total Usuarios</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-users fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card has-background-success has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ active_users }}</p>
+                                        <p class="subtitle is-6 has-text-white">Activos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-check-circle fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card has-background-danger has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ inactive_users }}</p>
+                                        <p class="subtitle is-6 has-text-white">Inactivos</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-times-circle fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column is-3">
+                <div class="card has-background-info has-text-white">
+                    <div class="card-content">
+                        <div class="level">
+                            <div class="level-left">
+                                <div class="level-item">
+                                    <div>
+                                        <p class="title is-3 has-text-white">{{ role_stats.USER|default:0 }}</p>
+                                        <p class="subtitle is-6 has-text-white">Usuarios Regulares</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="level-right">
+                                <div class="level-item">
+                                    <i class="fas fa-user fa-2x has-text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros y búsqueda -->
+        <div class="card mb-5">
+            <div class="card-content">
+                <div class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <h3 class="title is-5">
+                                <i class="fas fa-filter mr-2"></i>
+                                Filtros y Búsqueda
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <div class="field has-addons">
+                                <div class="control">
+                                    <input class="input" type="text" placeholder="Buscar usuario..." id="search-input">
+                                </div>
+                                <div class="control">
+                                    <button class="button is-primary" onclick="searchUsers()">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de usuarios -->
+        <div class="card">
+            <header class="card-header">
+                <p class="card-header-title">
+                    <i class="fas fa-list mr-2"></i>
+                    Lista de Usuarios
+                </p>
+                <div class="card-header-icon">
+                    <span class="tag is-info">{{ page_obj.paginator.count }} usuarios</span>
+                </div>
+            </header>
+            <div class="card-content">
+                {% if page_obj %}
+                    <div class="table-container">
+                        <table class="table is-fullwidth is-hoverable">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <i class="fas fa-user mr-1"></i>
+                                        Usuario
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-envelope mr-1"></i>
+                                        Email
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-flag mr-1"></i>
+                                        Rol
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-calendar mr-1"></i>
+                                        Fecha de Registro
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-toggle-on mr-1"></i>
+                                        Estado
+                                    </th>
+                                    <th>
+                                        <i class="fas fa-tools mr-1"></i>
+                                        Acciones
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div class="media">
+                                            <div class="media-left">
+                                                <figure class="image is-32x32">
+                                                    <i class="fas fa-user-circle fa-2x has-text-grey"></i>
+                                                </figure>
+                                            </div>
+                                            <div class="media-content">
+                                                <p class="title is-6">{{ user.username }}</p>
+                                                <p class="subtitle is-7">{{ user.first_name }} {{ user.last_name }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="has-text-grey">{{ user.email }}</span>
+                                    </td>
+                                    <td>
+                                        {% if user.profile %}
+                                            {% if user.profile.role == 'ENV_ADMIN' %}
+                                                <span class="tag is-danger">ENV_ADMIN</span>
+                                            {% elif user.profile.role == 'WEB_ADMIN' %}
+                                                <span class="tag is-warning">WEB_ADMIN</span>
+                                            {% elif user.profile.role == 'USER' %}
+                                                <span class="tag is-primary">USER</span>
+                                            {% else %}
+                                                <span class="tag is-light">GUEST</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="tag is-light">Sin Perfil</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="tag is-light">
+                                            {{ user.date_joined|date:"d/m/Y H:i" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="tag is-success">
+                                                <i class="fas fa-check mr-1"></i>
+                                                Activo
+                                            </span>
+                                        {% else %}
+                                            <span class="tag is-danger">
+                                                <i class="fas fa-times mr-1"></i>
+                                                Inactivo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.profile.role == 'ENV_ADMIN' %}
+                                            <!-- ENV_ADMIN no se puede modificar -->
+                                            <div class="buttons are-small">
+                                                <span class="button is-static is-small" title="ENV_ADMIN no se puede modificar">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                    <span class="ml-1">Protegido</span>
+                                                </span>
+                                            </div>
+                                        {% else %}
+                                            <!-- Acciones normales para otros usuarios -->
+                                            <div class="buttons are-small">
+                                                <!-- Cambiar rol -->
+                                                <a href="{% url 'change_user_role' user.pk %}" 
+                                                   class="button is-info is-small" 
+                                                   title="Cambiar rol">
+                                                    <i class="fas fa-user-tag"></i>
+                                                </a>
+                                                
+                                                <!-- Activar/Desactivar -->
+                                                <form method="post" action="{% url 'toggle_user_status' user.pk %}" 
+                                                      onsubmit="return confirmToggle('{{ user.username }}')" 
+                                                      style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" 
+                                                            class="button {% if user.is_active %}is-warning{% else %}is-success{% endif %} is-small" 
+                                                            title="{% if user.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                                        <i class="fas {% if user.is_active %}fa-pause{% else %}fa-play{% endif %}"></i>
+                                                    </button>
+                                                </form>
+                                                
+                                                <!-- Eliminar -->
+                                                <a href="{% url 'delete_user' user.pk %}" 
+                                                   class="button is-danger is-small" 
+                                                   title="Eliminar usuario"
+                                                   onclick="return confirmDelete('{{ user.username }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    {% if page_obj.has_other_pages %}
+                    <nav class="pagination is-centered mt-5" role="navigation" aria-label="pagination">
+                        {% if page_obj.has_previous %}
+                            <a class="pagination-previous" href="?page={{ page_obj.previous_page_number }}">
+                                <i class="fas fa-chevron-left mr-1"></i>
+                                Anterior
+                            </a>
+                        {% endif %}
+                        
+                        {% if page_obj.has_next %}
+                            <a class="pagination-next" href="?page={{ page_obj.next_page_number }}">
+                                Siguiente
+                                <i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                        {% endif %}
+                        
+                        <ul class="pagination-list">
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li><span class="pagination-link is-current">{{ num }}</span></li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li><a class="pagination-link" href="?page={{ num }}">{{ num }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="has-text-centered py-6">
+                        <i class="fas fa-users fa-3x has-text-grey-light mb-4"></i>
+                        <h3 class="title is-4 has-text-grey">No hay usuarios</h3>
+                        <p class="subtitle is-6 has-text-grey">No se encontraron usuarios en el sistema.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Acciones rápidas -->
+        <div class="card mt-5">
+            <div class="card-content">
+                <div class="content has-text-centered">
+                    <h3 class="title is-5 mb-4">
+                        <i class="fas fa-bolt mr-2"></i>
+                        Acciones Rápidas
+                    </h3>
+                    
+                    <div class="buttons is-centered">
+                        <a href="{% url 'admin_requests' %}" class="button is-warning">
+                            <i class="fas fa-clipboard-list mr-2"></i>
+                            Gestionar Solicitudes
+                        </a>
+                        
+                        <a href="{% url 'dashboard' %}" class="button is-primary">
+                            <i class="fas fa-tachometer-alt mr-2"></i>
+                            Volver al Dashboard
+                        </a>
+                        
+                        <a href="/admin/" class="button is-info" target="_blank">
+                            <i class="fas fa-cog mr-2"></i>
+                            Panel Django Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function confirmToggle(username) {
+        return confirm(`¿Estás seguro de que quieres cambiar el estado de ${username}?`);
+    }
+    
+    function confirmDelete(username) {
+        return confirm(`¿Estás seguro de que quieres ELIMINAR permanentemente al usuario ${username}? Esta acción no se puede deshacer.`);
+    }
+    
+    function searchUsers() {
+        const searchTerm = document.getElementById('search-input').value;
+        if (searchTerm.trim()) {
+            // Implementar búsqueda si es necesario
+            window.location.href = `?search=${encodeURIComponent(searchTerm)}`;
+        }
+    }
+    
+    // Permitir búsqueda con Enter
+    document.getElementById('search-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchUsers();
+        }
+    });
+</script>
+{% endblock %}
