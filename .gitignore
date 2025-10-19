@@ -29,12 +29,24 @@ ENV/
 env.bak/
 venv.bak/
 
+# Archivos de entorno (solo mantener .env.example)
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+
 # Base de datos SQLite
 django/db/
 django/*.sqlite3
 django/*.db
 *.sqlite3
 *.db
+
+# Archivos de base de datos de desarrollo
+django/src/db/
+django/src/*.sqlite3
+django/src/*.db
 
 # Archivos estáticos de Django
 django/static/
@@ -48,6 +60,8 @@ media/
 .env.local
 .env.production
 .env.staging
+.env.development
+.env.test
 
 # Archivos de Docker
 .dockerignore
@@ -73,6 +87,24 @@ Thumbs.db
 *.log
 logs/
 jitsi/logs/
+
+# Volúmenes de Docker
+jitsi/config/prosody/data/
+jitsi/config/jicofo/data/
+jitsi/config/jvb/data/
+jitsi/config/nginx/data/
+
+# Archivos sensibles de Jitsi
+jitsi/ssl/
+jitsi/config/prosody/accounts/
+jitsi/config/prosody/conf.d/
+jitsi/config/prosody/certs/
+jitsi/config/jicofo/sip-communicator.properties
+jitsi/config/jvb/sip-communicator.properties
+
+# Archivos de configuración reales (solo mantener .env.example)
+django/.env
+jitsi/.env
 
 # Archivos de cache
 .cache/
