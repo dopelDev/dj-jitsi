@@ -15,7 +15,7 @@ def create_admin_user(sender, **kwargs):
     if sender.name == 'models' and 'test' not in sys.argv:
         admin_username = os.getenv('ADMIN_USERNAME', 'admin')
         admin_email = os.getenv('ADMIN_EMAIL', 'admin@example.com')
-        admin_password = os.getenv('ADMIN_PASSWORD', 'admin123')
+        admin_password = os.getenv('ADMIN_PASSWORD', 'change-me-in-production')
         admin_first_name = os.getenv('ADMIN_FIRST_NAME', 'Admin')
         admin_last_name = os.getenv('ADMIN_LAST_NAME', 'User')
         

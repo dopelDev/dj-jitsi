@@ -119,3 +119,12 @@ htmlcov/
 
 # Directorio plans
 django/plans/
+
+# Archivos con credenciales
+django/env_simple
+django/.env
+django/env.local
+django/env.production
+django/env.staging
+django/env.development
+django/env.test
