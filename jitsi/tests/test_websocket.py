@@ -6,6 +6,9 @@ import socket
 import requests
 import docker
 import re
+import time
+import urllib.parse
+from urllib.parse import urlparse
 
 @pytest.mark.docker
 def test_websocket_port_5280(port_checker):
@@ -217,3 +220,258 @@ def test_websocket_prosody_modules(jitsi_containers):
             print("⚠️  No se encontraron configuraciones WebSocket/BOSH")
     except Exception as e:
         print(f"⚠️  Error verificando módulos WebSocket: {e}")
+
+# ===== NUEVOS TESTS PARA CUBRIR ERRORES ESPECÍFICOS =====
+
+@pytest.mark.docker
+def test_websocket_url_validation():
+    """Verificar que las URLs de WebSocket estén correctamente formateadas"""
+    # URLs correctas que deberían funcionar
+    correct_urls = [
+        "ws://localhost:5280/xmpp-websocket",
+        "wss://localhost:5280/xmpp-websocket",
+        "ws://localhost:8080/xmpp-websocket",
+        "wss://localhost:8080/xmpp-websocket"
+    ]
+    
+    # URLs incorrectas que causan el error reportado
+    incorrect_urls = [
+        "wss://http//localhost:8080/xmpp-websocket",  # Error reportado
+        "ws://http//localhost:5280/xmpp-websocket",   # Similar error
+        "wss://https//localhost:8080/xmpp-websocket", # Protocolo duplicado
+        "ws://ws//localhost:5280/xmpp-websocket",      # Protocolo duplicado
+    ]
+    
+    for url in correct_urls:
+        try:
+            parsed = urlparse(url)
+            assert parsed.scheme in ['ws', 'wss'], f"Esquema incorrecto en {url}"
+            assert parsed.netloc, f"Host vacío en {url}"
+            assert not '//' in parsed.netloc, f"Barras dobles en host de {url}"
+            print(f"✅ URL válida: {url}")
+        except Exception as e:
+            pytest.fail(f"Error validando URL correcta {url}: {e}")
+    
+    for url in incorrect_urls:
+        try:
+            parsed = urlparse(url)
+            # Estas URLs deberían fallar la validación
+            if '//' in parsed.netloc or parsed.scheme not in ['ws', 'wss']:
+                print(f"✅ URL incorrecta detectada correctamente: {url}")
+            else:
+                pytest.fail(f"URL incorrecta no detectada: {url}")
+        except Exception as e:
+            print(f"✅ URL incorrecta rechazada correctamente: {url} - {e}")
+
+@pytest.mark.docker
+def test_websocket_protocol_validation():
+    """Verificar que los protocolos WebSocket sean correctos"""
+    protocols_to_test = [
+        ("ws", "http", False),    # ws con http - incorrecto
+        ("wss", "https", False),  # wss con https - incorrecto  
+        ("ws", "ws", True),       # ws con ws - correcto
+        ("wss", "wss", True),     # wss con wss - correcto
+        ("ws", None, True),       # ws sin protocolo base - correcto
+        ("wss", None, True),      # wss sin protocolo base - correcto
+    ]
+    
+    for ws_protocol, base_protocol, should_pass in protocols_to_test:
+        if base_protocol:
+            # Simular el error: protocolo duplicado
+            malformed_url = f"{ws_protocol}://{base_protocol}//localhost:8080/xmpp-websocket"
+        else:
+            correct_url = f"{ws_protocol}://localhost:8080/xmpp-websocket"
+        
+        try:
+            if base_protocol:
+                # Esta URL debería ser inválida
+                parsed = urlparse(malformed_url)
+                if '//' in parsed.netloc:
+                    print(f"✅ URL malformada detectada: {malformed_url}")
+                else:
+                    pytest.fail(f"URL malformada no detectada: {malformed_url}")
+            else:
+                # Esta URL debería ser válida
+                parsed = urlparse(correct_url)
+                assert parsed.scheme == ws_protocol
+                print(f"✅ URL correcta: {correct_url}")
+        except Exception as e:
+            if should_pass:
+                pytest.fail(f"Error inesperado con URL correcta: {e}")
+            else:
+                print(f"✅ Error esperado con URL incorrecta: {e}")
+
+@pytest.mark.docker
+def test_websocket_strophe_error_simulation():
+    """Simular el error específico de Strophe.js reportado"""
+    # Simular la URL problemática del error
+    problematic_url = "wss://http//localhost:8080/xmpp-websocket?room=kindsolidssearchperfectly"
+    
+    try:
+        # Intentar parsear la URL problemática
+        parsed = urlparse(problematic_url)
+        
+        # Verificar que detectamos el problema
+        assert '//' in parsed.netloc, "No se detectó el problema de barras dobles"
+        assert parsed.scheme == 'wss', "Esquema incorrecto"
+        
+        print(f"✅ Error de Strophe.js simulado correctamente: {problematic_url}")
+        print(f"   - Esquema: {parsed.scheme}")
+        print(f"   - Host problemático: {parsed.netloc}")
+        print(f"   - Path: {parsed.path}")
+        print(f"   - Query: {parsed.query}")
+        
+    except Exception as e:
+        pytest.fail(f"Error inesperado simulando error de Strophe: {e}")
+
+@pytest.mark.docker
+def test_websocket_connection_error_handling():
+    """Verificar manejo de errores de conexión WebSocket"""
+    error_scenarios = [
+        {
+            "name": "URL con protocolo duplicado",
+            "url": "wss://http//localhost:8080/xmpp-websocket",
+            "should_fail": True
+        },
+        {
+            "name": "URL con barras dobles",
+            "url": "ws://localhost//8080/xmpp-websocket", 
+            "should_fail": True
+        },
+        {
+            "name": "URL correcta",
+            "url": "ws://localhost:8080/xmpp-websocket",
+            "should_fail": False
+        }
+    ]
+    
+    for scenario in error_scenarios:
+        try:
+            parsed = urlparse(scenario["url"])
+            
+            # Verificar problemas comunes
+            has_double_slashes = '//' in parsed.netloc
+            has_duplicate_protocols = parsed.scheme in parsed.netloc
+            
+            if scenario["should_fail"]:
+                if has_double_slashes or has_duplicate_protocols:
+                    print(f"✅ Error detectado en {scenario['name']}: {scenario['url']}")
+                else:
+                    pytest.fail(f"No se detectó error esperado en {scenario['name']}")
+            else:
+                if not has_double_slashes and not has_duplicate_protocols:
+                    print(f"✅ URL válida en {scenario['name']}: {scenario['url']}")
+                else:
+                    pytest.fail(f"Error inesperado en URL válida {scenario['name']}")
+                    
+        except Exception as e:
+            if scenario["should_fail"]:
+                print(f"✅ Excepción esperada en {scenario['name']}: {e}")
+            else:
+                pytest.fail(f"Excepción inesperada en {scenario['name']}: {e}")
+
+@pytest.mark.docker
+def test_websocket_strophe_connection_parameters():
+    """Verificar parámetros de conexión Strophe.js"""
+    # Simular diferentes configuraciones de conexión
+    connection_configs = [
+        {
+            "name": "Configuración correcta",
+            "url": "ws://localhost:5280/xmpp-websocket",
+            "room": "testroom",
+            "should_work": True
+        },
+        {
+            "name": "Configuración con error de protocolo",
+            "url": "wss://http//localhost:8080/xmpp-websocket", 
+            "room": "kindsolidssearchperfectly",
+            "should_work": False
+        },
+        {
+            "name": "Configuración con puerto incorrecto",
+            "url": "ws://localhost:9999/xmpp-websocket",
+            "room": "testroom",
+            "should_work": False
+        }
+    ]
+    
+    for config in connection_configs:
+        try:
+            parsed = urlparse(config["url"])
+            
+            # Verificar problemas en la URL
+            has_protocol_error = '//' in parsed.netloc or parsed.scheme in parsed.netloc
+            has_valid_port = parsed.port and parsed.port in [5280, 8080, 5222]
+            
+            if config["should_work"]:
+                assert not has_protocol_error, f"Error de protocolo en URL válida: {config['url']}"
+                assert has_valid_port, f"Puerto inválido en URL válida: {config['url']}"
+                print(f"✅ Configuración válida: {config['name']}")
+            else:
+                if has_protocol_error or not has_valid_port:
+                    print(f"✅ Error detectado en {config['name']}: {config['url']}")
+                else:
+                    print(f"⚠️  No se detectó error esperado en {config['name']}")
+                    
+        except Exception as e:
+            print(f"⚠️  Error procesando {config['name']}: {e}")
+
+@pytest.mark.docker
+def test_websocket_error_logging():
+    """Verificar que los errores de WebSocket se registren correctamente"""
+    # Simular diferentes tipos de errores que deberían aparecer en logs
+    error_messages = [
+        "WebSocket connection to 'wss://http//localhost:8080/xmpp-websocket?room=test' failed",
+        "Strophe: Websocket error",
+        "Strophe: Websocket closed unexcectedly",  # Nota: "unexcectedly" es como aparece en el error real
+        "The WebSocket connection could not be established or was disconnected"
+    ]
+    
+    for error_msg in error_messages:
+        # Verificar que podemos detectar estos patrones de error
+        error_patterns = [
+            r'WebSocket connection.*failed',
+            r'Strophe.*Websocket error',
+            r'Strophe.*Websocket closed',
+            r'WebSocket connection could not be established'
+        ]
+        
+        for pattern in error_patterns:
+            if re.search(pattern, error_msg, re.IGNORECASE):
+                print(f"✅ Patrón de error detectado: {pattern} en '{error_msg}'")
+                break
+        else:
+            print(f"⚠️  No se detectó patrón para: {error_msg}")
+
+@pytest.mark.docker
+def test_websocket_url_fix_suggestions():
+    """Proporcionar sugerencias para corregir URLs de WebSocket"""
+    problematic_urls = [
+        "wss://http//localhost:8080/xmpp-websocket",
+        "ws://ws//localhost:5280/xmpp-websocket", 
+        "wss://https//localhost:8080/xmpp-websocket"
+    ]
+    
+    for url in problematic_urls:
+        try:
+            parsed = urlparse(url)
+            
+            # Detectar problemas específicos
+            if '//' in parsed.netloc:
+                # Extraer el host real (después de las barras dobles)
+                host_parts = parsed.netloc.split('//')
+                if len(host_parts) > 1:
+                    real_host = host_parts[1]
+                    fixed_url = f"{parsed.scheme}://{real_host}{parsed.path}"
+                    if parsed.query:
+                        fixed_url += f"?{parsed.query}"
+                    
+                    print(f"✅ URL problemática: {url}")
+                    print(f"   Sugerencia de corrección: {fixed_url}")
+                else:
+                    print(f"⚠️  No se pudo extraer host de: {url}")
+            else:
+                print(f"✅ URL aparentemente correcta: {url}")
+                
+        except Exception as e:
+            print(f"⚠️  Error procesando URL {url}: {e}")

@@ -17,6 +17,7 @@ services:
     volumes:
       - ./logs:/var/log/jitsi
       - ./config/jitsi/meet-config.js:/usr/share/jitsi-meet/interface_config.js:ro
+      - ./config/init-scripts/install-tools-web.sh:/etc/cont-init.d/99-install-tools:ro
     env_file:
       - .env
     environment:
@@ -42,7 +43,9 @@ services:
     volumes:
       - prosody-config:/config
       - ./logs:/var/log/jitsi
+      - ./config/prosody/prosody.cfg.lua:/etc/prosody/prosody.cfg.lua:ro
       - ./config/prosody/prosody-jitsi.cfg.lua:/etc/prosody/conf.d/jitsi-meet.cfg.lua:ro
+      - ./config/init-scripts/install-tools-prosody.sh:/etc/cont-init.d/99-install-tools:ro
     env_file:
       - .env
     environment:
@@ -64,6 +67,7 @@ services:
       - jicofo-config:/config
       - ./logs:/var/log/jitsi
       - ./config/jicofo/jicofo.conf:/etc/jitsi/jicofo/jicofo.conf:ro
+      - ./config/init-scripts/install-tools-jicofo.sh:/etc/cont-init.d/99-install-tools:ro
     env_file:
       - .env
     environment:
@@ -89,6 +93,7 @@ services:
       - jvb-config:/config
       - ./logs:/var/log/jitsi
       - ./config/jvb/jvb.conf:/etc/jitsi/videobridge/jvb.conf:ro
+      - ./config/init-scripts/install-tools-jvb.sh:/etc/cont-init.d/99-install-tools:ro
     env_file:
       - .env
     environment:
