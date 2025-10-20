@@ -6,6 +6,9 @@ var config = {
     
     bosh: '//localhost/http-bind',
     
+    // WebSocket URL explícita para evitar construcción incorrecta
+    websocket: 'wss://localhost/xmpp-websocket',
+    
     // Sin autenticación para desarrollo
     enableUserRolesBasedOnToken: false,
     
@@ -39,6 +42,19 @@ var config = {
     
     // Features para desarrollo
     prejoinPageEnabled: false,
-    disableDeepLinking: true
+    disableDeepLinking: true,
+    
+    // Configuración de URLs para evitar errores de construcción
+    // IMPORTANTE: Estas URLs deben coincidir con PUBLIC_URL del .env
+    // Formato correcto: http://localhost:8080 (no http//localhost:8080)
+    // WebSocket debe usar wss:// para HTTPS o ws:// para HTTP
+    enableWelcomePage: true,
+    
+    // Configuración de dominio dinámico (se puede sobrescribir con variables de entorno)
+    // Para usar dominio dinámico, cambiar 'localhost' por window.location.hostname
+    // hosts: {
+    //     domain: window.location.hostname,
+    //     muc: 'conference.' + window.location.hostname
+    // }
 };
 

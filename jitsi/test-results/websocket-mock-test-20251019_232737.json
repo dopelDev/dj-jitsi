@@ -1,0 +1,81 @@
+{
+  "timestamp": "2025-10-19T23:27:37.537998",
+  "jitsi_url": "http://localhost:8080",
+  "test_room": "test-websocket-error",
+  "test_type": "mock",
+  "errors": [
+    {
+      "type": "websocket_malformed",
+      "pattern": "wss://https?//[^/]+",
+      "message": "WebSocket connection to 'wss://http//localhost:8080/xmpp-websocket?room=recentconcessionscrysure' failed:",
+      "timestamp": 1760934457538,
+      "level": "SEVERE"
+    },
+    {
+      "type": "websocket_failed",
+      "pattern": "WebSocket connection to .* failed",
+      "message": "WebSocket connection to 'wss://http//localhost:8080/xmpp-websocket?room=recentconcessionscrysure' failed:",
+      "timestamp": 1760934457538,
+      "level": "SEVERE"
+    },
+    {
+      "type": "strophe_error",
+      "pattern": "Strophe: Websocket error",
+      "message": "Strophe: Websocket error {\"isTrusted\":true}",
+      "timestamp": 1760934457638,
+      "level": "SEVERE"
+    },
+    {
+      "type": "strophe_closed",
+      "pattern": "Strophe: Websocket closed",
+      "message": "Strophe: Websocket closed unexcectedly",
+      "timestamp": 1760934457738,
+      "level": "SEVERE"
+    },
+    {
+      "type": "connection_fail",
+      "pattern": "connfail\\[.*WebSocket.*\\]",
+      "message": "Strophe connfail[The WebSocket connection could not be established or was disconnected.]: 1720.3000000044703",
+      "timestamp": 1760934457838,
+      "level": "INFO"
+    }
+  ],
+  "warnings": [],
+  "simulated_logs": [
+    {
+      "timestamp": 1760934457538,
+      "level": "SEVERE",
+      "message": "WebSocket connection to 'wss://http//localhost:8080/xmpp-websocket?room=recentconcessionscrysure' failed:",
+      "source": "console"
+    },
+    {
+      "timestamp": 1760934457638,
+      "level": "SEVERE",
+      "message": "Strophe: Websocket error {\"isTrusted\":true}",
+      "source": "console"
+    },
+    {
+      "timestamp": 1760934457738,
+      "level": "SEVERE",
+      "message": "Strophe: Websocket closed unexcectedly",
+      "source": "console"
+    },
+    {
+      "timestamp": 1760934457838,
+      "level": "INFO",
+      "message": "Strophe connfail[The WebSocket connection could not be established or was disconnected.]: 1720.3000000044703",
+      "source": "console"
+    },
+    {
+      "timestamp": 1760934457938,
+      "level": "INFO",
+      "message": "The conference will be reloaded after 30 seconds.",
+      "source": "console"
+    }
+  ],
+  "screenshots": [
+    "./test-results/screenshots/websocket_error_20251019_232737.png"
+  ],
+  "total_errors": 5,
+  "total_warnings": 0
+}

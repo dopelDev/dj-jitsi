@@ -16,12 +16,18 @@ services:
       - "8080:80"
     volumes:
       - ./logs:/var/log/jitsi
+      - ./config/jitsi/meet-config.js:/usr/share/jitsi-meet/interface_config.js:ro
     env_file:
       - .env
     environment:
       - ENABLE_AUTH=0
       - ENABLE_GUESTS=1
       - ENABLE_WELCOME_PAGE=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - jitsi
 
@@ -36,10 +42,16 @@ services:
     volumes:
       - prosody-config:/config
       - ./logs:/var/log/jitsi
+      - ./config/prosody/prosody-jitsi.cfg.lua:/etc/prosody/conf.d/jitsi-meet.cfg.lua:ro
     env_file:
       - .env
     environment:
       - ENABLE_AUTH=0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5280/http-bind/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - jitsi
 
@@ -51,12 +63,18 @@ services:
     volumes:
       - jicofo-config:/config
       - ./logs:/var/log/jitsi
+      - ./config/jicofo/jicofo.conf:/etc/jitsi/jicofo/jicofo.conf:ro
     env_file:
       - .env
     environment:
       - ENABLE_AUTH=0
     depends_on:
       - prosody
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/about/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - jitsi
 
@@ -70,12 +88,18 @@ services:
     volumes:
       - jvb-config:/config
       - ./logs:/var/log/jitsi
+      - ./config/jvb/jvb.conf:/etc/jitsi/videobridge/jvb.conf:ro
     env_file:
       - .env
     environment:
       - ENABLE_AUTH=0
     depends_on:
       - prosody
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/about/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - jitsi
 
