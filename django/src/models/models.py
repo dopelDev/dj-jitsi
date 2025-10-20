@@ -157,16 +157,22 @@ class Meeting(models.Model):
     room = models.CharField(max_length=120, unique=True)
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name="meetings")
     created_at = models.DateTimeField(auto_now_add=True)
+    is_private = models.BooleanField(default=False, help_text="Requiere autenticación en Jitsi")
 
     @staticmethod
     def generate_room():
         return "room-" + get_random_string(8)
 
     def jitsi_url(self):
-        # MVP sin JWT
         from django.conf import settings
-        base = getattr(settings, "JITSI_BASE_URL", "https://meet.jit.si")
-        return f"{base}/{self.room}"
+        base = getattr(settings, "JITSI_BASE_URL", "http://localhost:8080")
+        if self.is_private:
+            # Para salas privadas, el usuario debe autenticarse en Jitsi
+            return f"{base}/{self.room}"
+        else:
+            # Para salas públicas, usar JWT si está configurado
+            from utils.jitsi import generate_meeting_link
+            return generate_meeting_link(self.room, self.owner.username)
 
     def __str__(self):
         return f"{self.room} by {self.owner.username}"

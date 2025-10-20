@@ -133,9 +133,14 @@ def create_meeting(request):
     require_registered(request.user)  # USER / WEB_ADMIN / ENV_ADMIN
     
     if request.method == "POST":
+        is_private = request.POST.get('is_private') == '1'
         room = Meeting.generate_room()
-        m = Meeting.objects.create(room=room, owner=request.user)
-        messages.success(request, "Meeting creado.")
+        m = Meeting.objects.create(
+            room=room, 
+            owner=request.user,
+            is_private=is_private
+        )
+        messages.success(request, f"Reunión {'privada' if is_private else 'pública'} creada.")
         return redirect("meeting_detail", pk=m.pk)
     
     return render(request, "create_meeting.html")
@@ -194,8 +199,20 @@ def approve_request(request, pk):
     
     if request.method == 'POST':
         decision_note = request.POST.get('decision_note', '')
+        
+        # Generar contraseña temporal
+        temp_password = 'temp' + get_random_string(8)
+        
+        # Guardar en _plain_password para signal
+        username = request_obj.email.split("@")[0]
+        User = get_user_model()
+        user = User(username=username, email=request_obj.email)
+        user._plain_password = temp_password
+        user.set_password(temp_password)
+        user.save()
+        
         request_obj.approve(decided_by=request.user, decision_note=decision_note)
-        messages.success(request, f"Solicitud de {request_obj.email} aprobada exitosamente.")
+        messages.success(request, f"Usuario {username} creado con contraseña: {temp_password}")
         return redirect('admin_requests')
     
     return redirect('request_detail', pk=pk)

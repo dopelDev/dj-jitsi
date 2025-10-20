@@ -190,6 +190,46 @@ def sync_user_with_prosody(username: str, email: str) -> bool:
     return False
 
 
+def create_meeting_info(room_name: str, owner_username: str, is_private: bool = False) -> dict:
+    """
+    Crea información completa de reunión con URLs apropiadas
+    
+    Args:
+        room_name: Nombre de la sala
+        owner_username: Usuario propietario
+        is_private: Si es sala privada (requiere auth en Jitsi)
+    
+    Returns:
+        Diccionario con información de la sala
+    """
+    base_url = os.getenv("JITSI_BASE_URL", "http://localhost:8080")
+    
+    if is_private:
+        # Sala privada: requiere login en Jitsi
+        return {
+            "room_name": room_name,
+            "meeting_link": f"{base_url}/{room_name}",
+            "is_private": True,
+            "requires_jitsi_auth": True,
+            "owner": owner_username,
+        }
+    else:
+        # Sala pública: usar JWT si está configurado
+        jwt_token = jitsi_jwt(room=room_name, user_name=owner_username)
+        if jwt_token:
+            meeting_link = f"{base_url}/{room_name}?jwt={jwt_token}"
+        else:
+            meeting_link = f"{base_url}/{room_name}"
+        
+        return {
+            "room_name": room_name,
+            "meeting_link": meeting_link,
+            "is_private": False,
+            "requires_jitsi_auth": False,
+            "owner": owner_username,
+        }
+
+
 def create_prosody_room(room_name: str, moderator: str) -> bool:
     """
     Crea una sala en Prosody (implementación futura)

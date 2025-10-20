@@ -57,8 +57,11 @@ STATIC_ROOT = BASE_DIR / "static"
 LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/"
 
-# Jitsi configuration
+# Configuración Jitsi/XMPP
 JITSI_BASE_URL = os.getenv("JITSI_BASE_URL", "http://localhost:8080")
+JITSI_XMPP_REALM = os.getenv("JITSI_XMPP_REALM", "meet.localhost")
+JITSI_JWT_SECRET = os.getenv("JITSI_JWT_SECRET", "")
+JITSI_APP_ID = os.getenv("JITSI_APP_ID", "django-jitsi")
 
 # Internationalization
 LANGUAGE_CODE = "es-es"
