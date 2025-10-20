@@ -58,7 +58,7 @@ LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/"
 
 # Jitsi configuration
-JITSI_BASE_URL = os.getenv("JITSI_BASE_URL", "https://meet.jit.si")
+JITSI_BASE_URL = os.getenv("JITSI_BASE_URL", "http://localhost:8080")
 
 # Internationalization
 LANGUAGE_CODE = "es-es"

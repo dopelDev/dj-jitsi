@@ -61,7 +61,7 @@ def generate_meeting_link(room_name: str, user_name: str = "Guest") -> str:
     Returns:
         URL completa de la reunión
     """
-    base_url = os.getenv("JITSI_BASE_URL", "https://meet.jit.si")
+    base_url = os.getenv("JITSI_BASE_URL", "http://localhost:8080")
     
     # Generar JWT si está configurado
     jwt_token = jitsi_jwt(room=room_name, user_name=user_name)
