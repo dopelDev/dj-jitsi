@@ -4,10 +4,16 @@ var config = {
         muc: 'conference.localhost'
     },
     
-    bosh: '//localhost/http-bind',
+    bosh: 'http://localhost:8080/http-bind',
     
     // WebSocket URL explícita para evitar construcción incorrecta
-    websocket: 'wss://localhost/xmpp-websocket',
+    // IMPORTANTE: Usar ws:// para HTTP, wss:// para HTTPS
+    // El WebSocket debe apuntar al puerto 8080 donde está el frontend de Jitsi Meet
+    websocket: 'ws://localhost:8080/xmpp-websocket',
+    
+    // Forzar configuración de WebSocket para evitar construcción automática incorrecta
+    useStunTurn: true,
+    enableLayerSuspension: true,
     
     // Sin autenticación para desarrollo
     enableUserRolesBasedOnToken: false,
@@ -49,6 +55,26 @@ var config = {
     // Formato correcto: http://localhost:8080 (no http//localhost:8080)
     // WebSocket debe usar wss:// para HTTPS o ws:// para HTTP
     enableWelcomePage: true,
+    
+    // Configuración específica para forzar URLs correctas
+    // Evitar construcción automática incorrecta de URLs
+    disableDeepLinking: true,
+    disableThirdPartyRequests: true,
+    
+    // Configuración de dominio para evitar construcción incorrecta
+    // Forzar uso de localhost:8080 para todas las conexiones
+    domain: 'localhost',
+    muc: 'conference.localhost',
+    
+    // Forzar URLs específicas para evitar construcción automática incorrecta
+    // Estas URLs deben ser absolutas para evitar concatenación incorrecta
+    useStunTurn: true,
+    enableLayerSuspension: true,
+    
+    // Configuración adicional para evitar construcción automática de URLs
+    // Deshabilitar detección automática de protocolo
+    disableThirdPartyRequests: true,
+    disableDeepLinking: true,
     
     // Configuración de dominio dinámico (se puede sobrescribir con variables de entorno)
     // Para usar dominio dinámico, cambiar 'localhost' por window.location.hostname

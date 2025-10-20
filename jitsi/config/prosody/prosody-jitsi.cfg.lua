@@ -29,6 +29,14 @@ VirtualHost "meet.jitsi"
     cross_domain_websocket = true
     cross_domain_bosh = true
     
+    -- Configuración específica para WebSocket
+    websocket_ports = { 5280 }
+    websocket_interfaces = { "*" }
+    
+    -- Configuración para desarrollo Docker
+    allow_c2s = true
+    c2s_require_encryption = false
+    
     -- Configuración de salas MUC
     muc_mapper_domain_base = "meet.jitsi"
     
@@ -62,6 +70,7 @@ Component "breakout.meet.jitsi" "muc"
 -- Configuración de puertos
 c2s_ports = { 5222 }
 c2s_interfaces = { "*" }
+
 
 -- Configuración de logs
 log = {
