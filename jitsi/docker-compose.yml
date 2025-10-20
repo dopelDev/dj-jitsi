@@ -1,18 +1,68 @@
+version: '3'
+
 services:
-  jitsi:
-    build: .
-    container_name: jitsi-meet
+  # Frontend
+  web:
+    image: jitsi/web:stable
+    container_name: jitsi-web
     restart: unless-stopped
     ports:
       - "8080:80"
-      - "10000:10000/udp"
-    environment:
-      - JITSI_DOMAIN=${JITSI_DOMAIN:-localhost}
-      - PUBLIC_URL=${PUBLIC_URL:-http://localhost:8080}
-      - ENABLE_AUTH=${ENABLE_AUTH:-true}
-      - ENABLE_GUESTS=1
-      - ENABLE_WELCOME_PAGE=1
     volumes:
       - ./logs:/var/log/jitsi
-      - ../django/db/db.sqlite3:/config/sqlite/jitsi-django.sqlite3:ro
-      - ./prosody-config:/prosody-plugins-custom
+    environment:
+      - ENABLE_AUTH=0
+      - ENABLE_GUESTS=1
+      - ENABLE_WELCOME_PAGE=1
+      - JITSI_DOMAIN=localhost
+      - PUBLIC_URL=http://localhost:8080
+    networks:
+      - jitsi
+
+  # XMPP server
+  prosody:
+    image: jitsi/prosody:stable
+    container_name: jitsi-prosody
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/jitsi
+    environment:
+      - ENABLE_AUTH=0
+      - JITSI_DOMAIN=localhost
+    networks:
+      - jitsi
+
+  # Focus component
+  jicofo:
+    image: jitsi/jicofo:stable
+    container_name: jitsi-jicofo
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/jitsi
+    environment:
+      - ENABLE_AUTH=0
+      - JITSI_DOMAIN=localhost
+    depends_on:
+      - prosody
+    networks:
+      - jitsi
+
+  # Video bridge
+  jvb:
+    image: jitsi/jvb:stable
+    container_name: jitsi-jvb
+    restart: unless-stopped
+    ports:
+      - "10000:10000/udp"
+    volumes:
+      - ./logs:/var/log/jitsi
+    environment:
+      - ENABLE_AUTH=0
+      - JITSI_DOMAIN=localhost
+    depends_on:
+      - prosody
+    networks:
+      - jitsi
+
+networks:
+  jitsi:
