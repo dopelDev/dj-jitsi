@@ -1,5 +1,11 @@
 version: '3'
 
+# Volúmenes para persistencia de configuraciones
+volumes:
+  prosody-config:
+  jicofo-config:
+  jvb-config:
+
 services:
   # Frontend
   web:
@@ -10,12 +16,12 @@ services:
       - "8080:80"
     volumes:
       - ./logs:/var/log/jitsi
+    env_file:
+      - .env
     environment:
       - ENABLE_AUTH=0
       - ENABLE_GUESTS=1
       - ENABLE_WELCOME_PAGE=1
-      - JITSI_DOMAIN=localhost
-      - PUBLIC_URL=http://localhost:8080
     networks:
       - jitsi
 
@@ -24,11 +30,16 @@ services:
     image: jitsi/prosody:stable
     container_name: jitsi-prosody
     restart: unless-stopped
+    ports:
+      - "5222:5222"
+      - "5280:5280"
     volumes:
+      - prosody-config:/config
       - ./logs:/var/log/jitsi
+    env_file:
+      - .env
     environment:
       - ENABLE_AUTH=0
-      - JITSI_DOMAIN=localhost
     networks:
       - jitsi
 
@@ -38,10 +49,12 @@ services:
     container_name: jitsi-jicofo
     restart: unless-stopped
     volumes:
+      - jicofo-config:/config
       - ./logs:/var/log/jitsi
+    env_file:
+      - .env
     environment:
       - ENABLE_AUTH=0
-      - JITSI_DOMAIN=localhost
     depends_on:
       - prosody
     networks:
@@ -55,10 +68,12 @@ services:
     ports:
       - "10000:10000/udp"
     volumes:
+      - jvb-config:/config
       - ./logs:/var/log/jitsi
+    env_file:
+      - .env
     environment:
       - ENABLE_AUTH=0
-      - JITSI_DOMAIN=localhost
     depends_on:
       - prosody
     networks:

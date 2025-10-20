@@ -1,10 +1,25 @@
-# Jitsi Meet - Contenedor Único
+# Jitsi Meet - Configuración Segura con Docker Compose
 
-Jitsi Meet dockerizado en un solo contenedor para desarrollo, incluyendo todos los componentes necesarios para videoconferencias.
+Jitsi Meet configurado con Docker Compose siguiendo las mejores prácticas de seguridad, incluyendo todos los componentes necesarios para videoconferencias con autenticación interna segura.
 
 ## 🎯 Propósito
 
-Este proyecto proporciona una solución completa de Jitsi Meet en un solo contenedor Docker, ideal para desarrollo y testing. Incluye todos los componentes necesarios: servidor XMPP (Prosody), componente de enfoque (Jicofo), puente de video (JVB) y la interfaz web de Jitsi Meet.
+Este proyecto proporciona una solución completa de Jitsi Meet con Docker Compose, siguiendo las mejores prácticas de seguridad documentadas en `esential.md`. Incluye todos los componentes necesarios con configuración segura: servidor XMPP (Prosody), componente de enfoque (Jicofo), puente de video (JVB) y la interfaz web de Jitsi Meet.
+
+## 🔐 Configuración de Seguridad
+
+**⚠️ IMPORTANTE**: Este proyecto implementa las mejores prácticas de seguridad documentadas en `esential.md`:
+
+- **Contraseñas seguras obligatorias**: No se pueden usar contraseñas vacías o por defecto
+- **Generación automática**: Script `gen-passwords.sh` genera contraseñas seguras automáticamente
+- **Validación de configuración**: Script `validate-config.sh` verifica que todo esté configurado correctamente
+- **Variables de entorno completas**: Todas las credenciales internas están documentadas y configuradas
+
+### Documentación de Seguridad
+
+- 📋 **[DEPLOYMENT.md](DEPLOYMENT.md)** - Guía paso a paso para despliegue seguro
+- 🔧 **[esential.md](../esential.md)** - Documentación técnica completa de configuración
+- ✅ **[validate-config.sh](validate-config.sh)** - Script de validación automática
 
 ## 🏗️ Componentes Incluidos
 
@@ -38,47 +53,79 @@ jitsi/
 ### 1. Configurar Variables de Entorno
 
 ```bash
-cp .env.example .env
-# Editar .env con tus configuraciones
+# Copiar archivo de plantilla
+cp env.example .env
+
+# Generar contraseñas seguras automáticamente
+bash gen-passwords.sh
 ```
 
-### 2. Construir y Ejecutar
+### 2. Validar Configuración
 
 ```bash
-# Construir la imagen
-docker-compose build
-
-# Ejecutar el contenedor
-docker-compose up -d
-
-# Ver logs en tiempo real
-docker-compose logs -f
+# Verificar que todo esté configurado correctamente
+bash validate-config.sh
 ```
 
-### 3. Acceder a Jitsi Meet
+### 3. Ejecutar Servicios
 
-- **URL**: `https://localhost` (o tu dominio configurado)
-- **Puerto HTTP**: 80
-- **Puerto HTTPS**: 443
+```bash
+# Levantar todos los servicios
+docker compose up -d
+
+# Ver logs en tiempo real
+docker compose logs -f
+```
+
+### 4. Acceder a Jitsi Meet
+
+- **URL**: `http://localhost:8080` (o tu dominio configurado)
+- **Puerto Web**: 8080
 - **Puerto JVB**: 10000/udp
+
+### 5. Verificar Despliegue
+
+```bash
+# Verificar que no hay errores FATAL
+docker compose logs prosody | grep -i "fatal"
+
+# Verificar conexiones XMPP
+docker compose logs jicofo | grep "Connected to XMPP"
+docker compose logs jvb | grep "Joined MUC"
+```
 
 ## ⚙️ Configuración
 
-### Variables de Entorno
+### Variables de Entorno Críticas
+
+| Variable | Descripción | Generada por |
+|----------|-------------|--------------|
+| `JICOFO_COMPONENT_SECRET` | Secreto del componente Jicofo | `gen-passwords.sh` |
+| `JICOFO_AUTH_PASSWORD` | Contraseña del usuario focus | `gen-passwords.sh` |
+| `JVB_AUTH_PASSWORD` | Contraseña del usuario jvb | `gen-passwords.sh` |
+| `XMPP_DOMAIN` | Dominio XMPP principal | Manual |
+| `XMPP_AUTH_DOMAIN` | Dominio XMPP de autenticación | Manual |
+
+### Variables Públicas
 
 | Variable | Descripción | Valor por Defecto |
 |----------|-------------|-------------------|
 | `JITSI_DOMAIN` | Dominio principal de Jitsi | `localhost` |
-| `PUBLIC_URL` | URL pública de acceso | `https://localhost` |
+| `PUBLIC_URL` | URL pública de acceso | `http://localhost:8080` |
 | `JVB_PORT` | Puerto del puente de video | `10000` |
 | `ENABLE_AUTH` | Habilitar autenticación | `false` |
 
+### ⚠️ Importante sobre Seguridad
+
+- **NUNCA** uses contraseñas vacías o por defecto
+- **SIEMPRE** ejecuta `bash gen-passwords.sh` antes del primer despliegue
+- **VERIFICA** la configuración con `bash validate-config.sh`
+- **CONSULTA** `esential.md` para detalles técnicos completos
+
 ### Puertos Expuestos
 
-- **80**: HTTP (redirige a HTTPS)
-- **443**: HTTPS (Jitsi Meet web)
+- **8080**: HTTP (Jitsi Meet web)
 - **10000/udp**: JVB (puente de video)
-- **4443**: JVB TCP
 
 ## 🔧 Desarrollo
 
@@ -144,43 +191,64 @@ def create_meeting_url(room_name, user_name):
 
 ### Problemas Comunes
 
-#### 1. El contenedor no inicia
+#### 1. Error: "FATAL ERROR: Jicofo component secret and auth password must be set"
 ```bash
-# Verificar logs
-docker-compose logs
-
-# Verificar configuración
-docker-compose config
+# Causa: Contraseñas vacías en .env
+# Solución: Regenerar contraseñas
+bash gen-passwords.sh
+docker compose restart
 ```
 
-#### 2. No se puede acceder a Jitsi Meet
-- Verificar que el puerto 443 esté disponible
-- Comprobar que el certificado SSL se haya generado
-- Revisar logs de nginx
+#### 2. Error: "XMPP failed authentication"
+```bash
+# Causa: Desincronización entre .env y cuentas Prosody
+# Solución: Recrear volúmenes de configuración
+docker compose down
+docker volume rm jitsi_prosody-config jitsi_jicofo-config jitsi_jvb-config
+docker compose up -d
+```
 
-#### 3. Problemas de video/audio
-- Verificar que el puerto 10000/udp esté abierto
-- Comprobar configuración de STUN servers
-- Revisar logs de JVB
+#### 3. Los servicios no se conectan
+```bash
+# Verificar configuración
+bash validate-config.sh
 
-### Regenerar Certificados
+# Verificar logs
+docker compose logs prosody | grep -i "fatal"
+docker compose logs jicofo | grep "Connected to XMPP"
+docker compose logs jvb | grep "Joined MUC"
+```
+
+#### 4. No se puede acceder a Jitsi Meet
+- Verificar que el puerto 8080 esté disponible
+- Comprobar que todos los contenedores estén ejecutándose
+- Revisar logs de todos los servicios
+
+### Scripts de Diagnóstico
 
 ```bash
-# Detener el contenedor
-docker-compose down
+# Validación completa
+bash validate-config.sh
 
-# Eliminar certificados existentes
-rm -rf ssl/*
+# Verificar estado de contenedores
+docker compose ps
 
-# Reiniciar (se generarán nuevos certificados)
-docker-compose up -d
+# Ver logs de todos los servicios
+docker compose logs --tail=50
 ```
 
 ## 📚 Documentación Adicional
 
+### Documentación del Proyecto
+- 📋 **[DEPLOYMENT.md](DEPLOYMENT.md)** - Guía completa de despliegue
+- 🔧 **[esential.md](../esential.md)** - Documentación técnica detallada
+- ✅ **[validate-config.sh](validate-config.sh)** - Script de validación
+
+### Documentación Externa
 - [Documentación oficial de Jitsi](https://jitsi.org/docs/)
 - [Configuración de Prosody](https://prosody.im/doc/configuration)
 - [Jitsi Meet API](https://github.com/jitsi/jitsi-meet/blob/master/doc/api.md)
+- [Docker Jitsi Meet](https://github.com/jitsi/docker-jitsi-meet)
 
 ## 🤝 Contribución
 
@@ -193,7 +261,9 @@ Para contribuir a este proyecto:
 
 ## 📝 Notas de Desarrollo
 
-- Los certificados SSL se generan automáticamente al iniciar
-- Los logs se mantienen persistentes en el directorio `logs/`
-- La configuración se puede personalizar modificando archivos en `config/`
-- Para producción, cambiar `ENABLE_AUTH=true` y configurar autenticación JWT
+- **Contraseñas seguras**: Se generan automáticamente con `gen-passwords.sh`
+- **Validación**: Usar `validate-config.sh` para verificar configuración
+- **Logs**: Se mantienen persistentes en el directorio `logs/`
+- **Volúmenes**: Las configuraciones se persisten en volúmenes Docker
+- **Seguridad**: Para producción, cambiar `ENABLE_AUTH=true` y configurar autenticación JWT
+- **Documentación**: Consultar `esential.md` para detalles técnicos completos
